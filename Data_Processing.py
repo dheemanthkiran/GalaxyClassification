@@ -1,9 +1,9 @@
-import torch
-from torch.utils.data import DataLoader, Dataset
-import numpy as np
 import os
+import numpy as np
 import pandas as pd
+import torch
 from PIL import Image
+from torch.utils.data import Dataset
 from torchvision import transforms
 
 
@@ -74,20 +74,20 @@ class CustomImageDataset(Dataset):
             return image, label
 
 
-"""Creating Galaxy Dataset"""
+"""Creating Galaxy Dataset
 Galaxy_dataset = CustomImageDataset(
     mapping_file="./gz2_filename_mapping.csv",
     img_dir="./images_gz2/images",
     img_infoFile="./gz2_hart16.csv")
 
-"""Creating new instance of dataloader class"""
+Creating new instance of dataloader class
 
 Ten , data = Galaxy_dataset.__getitem__(10)
 print(Ten.size())
 
-"""dataloader = DataLoader(dataset=Galaxy_dataset, batch_size=4, shuffle=True)
+dataloader = DataLoader(dataset=Galaxy_dataset, batch_size=4, shuffle=True)
 Creating iterator for dataloader
 dataiter = iter(dataloader)
 data = dataiter.__next__()
 features, labels = data
-print(features, labels)"""
+print(features, labels"""
