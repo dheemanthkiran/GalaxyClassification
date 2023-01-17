@@ -37,6 +37,7 @@ class LeNet(torch.nn.Module):
 
 model = LeNet()
 
+<<<<<<< HEAD
 Galaxy_dataset = Data_Processing.CustomImageDataset(
     mapping_file="./gz2_filename_mapping.csv",
     img_dir="./images_gz2/images",
@@ -47,3 +48,4 @@ Image, Label = Galaxy_dataset.__getitem__(35)
 a = model.forward(Image)
 
 print(a)
+
