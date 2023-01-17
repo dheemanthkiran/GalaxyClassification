@@ -12,15 +12,15 @@ class LeNet(torch.nn.Module):
         self.conv1 = torch.nn.Conv2d(3, 6, 5)
         self.conv2 = torch.nn.Conv2d(6, 16, 3)
         # an affine operation: y = Wx + b
-        self.fc1 = torch.nn.Linear(16 * 104 * 104, 120)  # 6*6 from image dimension
+        self.fc1 = torch.nn.Linear(16 * 25 * 25, 120)  # 6*6 from image dimension
         self.fc2 = torch.nn.Linear(120, 84)
         self.fc3 = torch.nn.Linear(84, 3)
 
     def forward(self, x):
         # Max pooling over a (2, 2) window
-        x = F.max_pool2d(F.relu(self.conv1(x)), 2)
+        x = F.max_pool2d(F.relu(self.conv1(x)), 4)
         # If the size is a square you can only specify a single number
-        x = F.max_pool2d(F.relu(self.conv2(x)), 2)
+        x = F.max_pool2d(F.relu(self.conv2(x)), 4)
         x = torch.flatten(x, 0)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
@@ -37,7 +37,7 @@ class LeNet(torch.nn.Module):
 
 model = LeNet()
 
-<<<<<<< HEAD
+
 Galaxy_dataset = Data_Processing.CustomImageDataset(
     mapping_file="./gz2_filename_mapping.csv",
     img_dir="./images_gz2/images",
