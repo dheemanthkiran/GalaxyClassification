@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import torch
 from PIL import Image
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
 
@@ -11,9 +11,9 @@ class CustomImageDataset(Dataset):
     """Custom Dataset class with Galaxy images"""
 
     def __init__(self, mapping_file, img_dir, img_infoFile, transform=transforms.ToTensor(), target_transform=None):
-        """Instanciance dataset sublass
+        """Instanciante dataset sublass
 
-            Pamareters:
+            Parameters:
                 mapping file (string) directory of mapping file
                 img_dir (string) directory of file with images
                 img_infoFile (String) directory of
@@ -40,54 +40,52 @@ class CustomImageDataset(Dataset):
             Tensor: Normalised pixel values of the image
             np.array: Classification Lablel of Image
         """
-        try:
-            """Locating Image path"""
-            img_path = os.path.join(self.img_dir, str(self.img_labels.iloc[idx, 2]) + '.jpg')
-            image = Image.open(img_path)
-            image_id = self.img_labels.iloc[idx, 0]
-            """Loading fraction of votes for each category"""
-            list = [self.img_info[self.img_info['dr7objid'] == image_id].iloc[0, 12],
-                    self.img_info[self.img_info['dr7objid'] == image_id].iloc[0, 18],
-                    self.img_info[self.img_info['dr7objid'] == image_id].iloc[0, 24]]
-            """creating new label with the highest voted category"""
-            label = torch.zeros(3)
-            label[np.argmax(list)] = 1
-            if self.transform:
-                image = self.transform(image)
-            if self.target_transform:
-                label = self.target_transform(label)
-            return image, label
-            """The except is there incase the id requested does not have an accosiated image, as some images are missing"""
-        except:
-            img_path = os.path.join(self.img_dir, str(self.img_labels.iloc[idx + 3, 2]) + '.jpg')
-            image = Image.open(img_path)
-            image_id = self.img_labels.iloc[idx, 0]
-            list = [self.img_info[self.img_info['dr7objid'] == image_id].iloc[0, 12],
-                    self.img_info[self.img_info['dr7objid'] == image_id].iloc[0, 18],
-                    self.img_info[self.img_info['dr7objid'] == image_id].iloc[0, 24]]
-            label = torch.zeros(3)
-            label[np.argmax(list)] = 1
-            if self.transform:
-                image = self.transform(image)
-            if self.target_transform:
-                label = self.target_transform(label)
-            return image, label
+        """Locating Image path"""
+        i = 0
+        list = [1,2,3]
+        while True:
+            try:
+                """Tries to fetch Image with requested id"""
+                img_path = os.path.join(self.img_dir, str(self.img_labels.iloc[idx + i, 2]) + '.jpg')
+                image = Image.open(img_path)
+                image_id = self.img_labels.iloc[idx + i, 0]
+                """Loading fraction of votes for each category"""
+                list = [self.img_info[self.img_info['dr7objid'] == image_id].iloc[0, 12],
+                        self.img_info[self.img_info['dr7objid'] == image_id].iloc[0, 18],
+                        self.img_info[self.img_info['dr7objid'] == image_id].iloc[0, 24]]
+                break
+            except FileNotFoundError:
+                """Some Images are missing. If the file is not found, it will just return the next available image"""
+                i = i + 1
+                pass
+            except IndexError:
+                """A small number of images have unindexed information. This handles that error"""
+                i = i + 1
+                pass
+
+        """creating new label with the highest voted category"""
+        label = torch.zeros(3)
+        label[np.argmax(list)] = 1
+        if self.transform:
+            image = self.transform(image)
+        if self.target_transform:
+            label = self.target_transform(label)
+        return image, label
+        """The except is there incase the id requested does not have an accosiated image, as some images are missing"""
 
 
-"""Creating Galaxy Dataset
+""""Creating Galaxy Dataset
 Galaxy_dataset = CustomImageDataset(
     mapping_file="./gz2_filename_mapping.csv",
     img_dir="./images_gz2/images",
     img_infoFile="./gz2_hart16.csv")
 
-Creating new instance of dataloader class
 
-Ten , data = Galaxy_dataset.__getitem__(10)
-print(Ten.size())
+# Creating new instance of dataloader class
 
-dataloader = DataLoader(dataset=Galaxy_dataset, batch_size=4, shuffle=True)
-Creating iterator for dataloader
+dataloader = DataLoader(dataset=Galaxy_dataset, batch_size=10, shuffle=True)
+# Creating iterator for dataloader
 dataiter = iter(dataloader)
 data = dataiter.__next__()
 features, labels = data
-print(features, labels"""
+print(features, labels)"""
