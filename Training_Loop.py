@@ -1,6 +1,7 @@
 import Network
 import Data_Processing
 import torch.utils.data
+from torch.utils.data import DataLoader
 import torch
 
 Galaxy_dataset = Data_Processing.CustomImageDataset(
@@ -8,7 +9,8 @@ Galaxy_dataset = Data_Processing.CustomImageDataset(
     img_dir="./images_gz2/images",
     img_infoFile="./gz2_hart16.csv")
 
-Training_Data, Validation_Data = torch.utils.data.random_split(dataset=Galaxy_dataset, lengths=[0.85, 0.15], generator=torch.Generator().manual_seed(12))
+Training_Data, Validation_Data, Test_Data = torch.utils.data.random_split(dataset=Galaxy_dataset,
+                                                                          lengths=[0.6, 0.2, 0.2],
+                                                                          generator=torch.Generator().manual_seed(12))
 
-print(Training_Data.__len__())
-print(Validation_Data.__len__())
+trainingLoader = DataLoader(Training_Data, )

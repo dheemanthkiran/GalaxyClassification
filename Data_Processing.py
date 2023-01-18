@@ -11,7 +11,7 @@ class CustomImageDataset(Dataset):
     """Custom Dataset class with Galaxy images"""
 
     def __init__(self, mapping_file, img_dir, img_infoFile, transform=transforms.ToTensor(), target_transform=None):
-        """Instanciante dataset sublass
+        """Instanciante dataset subclass
 
             Parameters:
                 mapping file (string) directory of mapping file
@@ -73,6 +73,8 @@ class CustomImageDataset(Dataset):
         return image, label
         """The except is there incase the id requested does not have an accosiated image, as some images are missing"""
 
+
+DataLoader()
 
 """"Creating Galaxy Dataset
 Galaxy_dataset = CustomImageDataset(

@@ -27,7 +27,7 @@ class LeNet(torch.nn.Module):
         """
         does a forwads pass of the network
 
-        Paramet
+        Parameters: ([3,n,n] tensor object) contains the image rgb values
         """
         # Max pooling over a (4,4) window to decrease parameters
         x = F.max_pool2d(F.relu(self.conv1(x)), 4)
