@@ -13,4 +13,5 @@ Training_Data, Validation_Data, Test_Data = torch.utils.data.random_split(datase
                                                                           lengths=[0.6, 0.2, 0.2],
                                                                           generator=torch.Generator().manual_seed(12))
 
-trainingLoader = DataLoader(Training_Data, )
+trainingLoader = DataLoader(Training_Data,shuffle=True, batch_size=64)
+trainingLoader = DataLoader(Validation_Data,shuffle=False, batch_size=64)
