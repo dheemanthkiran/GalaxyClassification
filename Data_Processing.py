@@ -74,7 +74,7 @@ class CustomImageDataset(Dataset):
         """The except is there incase the id requested does not have an accosiated image, as some images are missing"""
 
 
-DataLoader()
+
 
 """"Creating Galaxy Dataset
 Galaxy_dataset = CustomImageDataset(
