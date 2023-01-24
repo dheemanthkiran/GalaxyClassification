@@ -3,14 +3,14 @@ import numpy as np
 import pandas as pd
 import torch
 from PIL import Image
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 from torchvision import transforms
 
 
 class CustomImageDataset(Dataset):
     """Custom Dataset class with Galaxy images"""
 
-    def __init__(self, mapping_file, img_dir, img_infoFile, transform=transforms.ToTensor(), target_transform=None):
+    def __init__(self,mapping_file, img_dir, img_infoFile, transform=transforms.ToTensor(), target_transform=None,  device="cuda:0"):
         """Instanciante dataset subclass
 
             Parameters:
@@ -56,11 +56,17 @@ class CustomImageDataset(Dataset):
                 break
             except FileNotFoundError:
                 """Some Images are missing. If the file is not found, it will just return the next available image"""
-                i = i + 1
+                if i == self.__len__():
+                    i = 0
+                else:
+                    i = i + 1
                 pass
             except IndexError:
                 """A small number of images have unindexed information. This handles that error"""
-                i = i + 1
+                if i == self.__len__():
+                    i = 0
+                else:
+                    i = i + 1
                 pass
 
         """creating new label with the highest voted category"""
@@ -70,17 +76,22 @@ class CustomImageDataset(Dataset):
             image = self.transform(image)
         if self.target_transform:
             label = self.target_transform(label)
+        image.to(torch.device('cuda:0'))
         return image, label
         """The except is there incase the id requested does not have an accosiated image, as some images are missing"""
 
 
 
 
-""""Creating Galaxy Dataset
+"""#Creating Galaxy Dataset
 Galaxy_dataset = CustomImageDataset(
     mapping_file="./gz2_filename_mapping.csv",
     img_dir="./images_gz2/images",
     img_infoFile="./gz2_hart16.csv")
+
+image, data = Galaxy_dataset.__getitem__(35)
+
+print(image.to_mkldnn())
 
 
 # Creating new instance of dataloader class

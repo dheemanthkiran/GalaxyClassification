@@ -2,9 +2,9 @@ import Network
 import Data_Processing
 import torch.utils.data
 from torch.utils.data import DataLoader
-import torch
 import torch.nn as nn
 import torch.optim
+from datetime import datetime
 
 Galaxy_dataset = Data_Processing.CustomImageDataset(
     mapping_file="./gz2_filename_mapping.csv",
@@ -15,17 +15,32 @@ Training_Data, Validation_Data, Test_Data = torch.utils.data.random_split(datase
                                                                           lengths=[0.6, 0.2, 0.2],
                                                                           generator=torch.Generator().manual_seed(12))
 
-trainingLoader = DataLoader(Training_Data,shuffle=True, batch_size=64)
-validationLoader = DataLoader(Validation_Data,shuffle=False, batch_size=64)
+trainingLoader = DataLoader(Training_Data, shuffle=True, batch_size=128, pin_memory=True)
+validationLoader = DataLoader(Validation_Data, shuffle=False, batch_size=16, pin_memory=True)
+
+
+
+if torch.cuda.is_available():
+    dev = "cuda:0"
+else:
+    dev = "cpu"
 
 model = Network.LeNet()
+device = torch.device(dev)
+# model.to(device=device)
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.3, dampening=0.1)
 
+"""for inputs, labels in trainingLoader:
+    inputs, labels = inputs.to(device), labels.to(device)
+
+print("Done loading trainer")
+for inputs, labels in validationLoader:
+    inputs, labels = inputs.to(device), labels.to(device)
+print("Done loading validation")"""
 
 
-
-def train_one_epoch(epoch_index, tb_writer):
+def train_one_epoch(epoch_index):
     running_loss = 0.
     last_loss = 0.
 
@@ -33,6 +48,7 @@ def train_one_epoch(epoch_index, tb_writer):
     # iter(training_loader) so that we can track the batch
     # index and do some intra-epoch reporting
     for i, data in enumerate(trainingLoader):
+        print("batch ", i)
         # Every data instance is an input + label pair
         inputs, labels = data
 
@@ -51,24 +67,27 @@ def train_one_epoch(epoch_index, tb_writer):
 
         # Gather data and report
         running_loss += loss.item()
-        if i % 1000 == 999:
-            last_loss = running_loss / 1000  # loss per batch
+        if i % 20 == 19:
+            last_loss = running_loss / 20  # loss per batch
             print('  batch {} loss: {}'.format(i + 1, last_loss))
-            tb_x = epoch_index * len(trainingLoader) + i + 1
-            tb_writer.add_scalar('Loss/train', last_loss, tb_x)
+            # tb_x = epoch_index * len(trainingLoader) + i + 1
+            # tb_writer.add_scalar('Loss/train', last_loss, tb_x)
             running_loss = 0.
 
     return last_loss
 
 
-epochsNum = 10
+epochsNum = 2
+# writer = SummaryWriter('runs/fashion_trainer_{}'.format(timestamp))
+
+best_vloss = 1_000_000
 
 for epoch in range(epochsNum):
-    print('EPOCH {}:'.format(epochsNum + 1))
+    print('EPOCH {}:'.format(epoch + 1))
 
     # Make sure gradient tracking is on, and do a pass over the data
     model.train(True)
-    avg_loss = train_one_epoch(epochsNum, writer)
+    avg_loss = train_one_epoch(epochsNum)
 
     # We don't need gradients on to do reporting
     model.train(False)
@@ -82,23 +101,19 @@ for epoch in range(epochsNum):
 
     avg_vloss = running_vloss / (i + 1)
     print('LOSS train {} valid {}'.format(avg_loss, avg_vloss))
-
+    """
     # Log the running loss averaged per batch
     # for both training and validation
     writer.add_scalars('Training vs. Validation Loss',
                        {'Training': avg_loss, 'Validation': avg_vloss},
                        epochsNum + 1)
-    writer.flush()
+    writer.flush()"""
 
     # Track best performance, and save the model's state
+
     if avg_vloss < best_vloss:
         best_vloss = avg_vloss
-        model_path = 'model_{}_{}'.format(timestamp, epochsNum)
-        torch.save(model.state_dict(), model_path)
+        model_path = 'model_{}'.format(epochsNum)
+        torch.save(model.state_dict(), "model.pt")
 
     epochsNum += 1
-
-
-
-
-
