@@ -76,7 +76,8 @@ class CustomImageDataset(Dataset):
             image = self.transform(image)
         if self.target_transform:
             label = self.target_transform(label)
-        image.to(torch.device('cuda:0'))
+        image = image[:, 84:339, 84:339]
+        #image.to(torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
         return image, label
         """The except is there incase the id requested does not have an accosiated image, as some images are missing"""
 
@@ -91,7 +92,8 @@ Galaxy_dataset = CustomImageDataset(
 
 image, data = Galaxy_dataset.__getitem__(35)
 
-print(image.to_mkldnn())
+
+print(image.size())
 
 
 # Creating new instance of dataloader class

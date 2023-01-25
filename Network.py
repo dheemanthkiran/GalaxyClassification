@@ -20,8 +20,9 @@ class LeNet(torch.nn.Module):
         self.conv1 = torch.nn.Conv2d(3, 6, 5)
         self.conv2 = torch.nn.Conv2d(6, 16, 3)
         # 3 Linear layers for final output
-        self.fc1 = torch.nn.Linear(16 * 25 * 25, 120)
-        self.fc2 = torch.nn.Linear(120, 3)
+        self.fc1 = torch.nn.Linear(16*15*15, 120)
+        self.fc2 = torch.nn.Linear(120, 52)
+        self.fc3 = torch.nn.Linear(52, 3)
 
     def forward(self, x):
         """
@@ -41,7 +42,8 @@ class LeNet(torch.nn.Module):
         else:
             x = torch.flatten(x, 0)
         x = F.relu(self.fc1(x))
-        x = self.fc2(x)
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
         return x
 
     def num_flat_features(self, x):
@@ -58,15 +60,6 @@ Galaxy_dataset = Data_Processing.CustomImageDataset(
     mapping_file="./gz2_filename_mapping.csv",
     img_dir="./images_gz2/images",
     img_infoFile="./gz2_hart16.csv")
-
-dataloader = DataLoader(Galaxy_dataset, shuffle=True, batch_size=32)
-dataiter = iter(dataloader)
-data = dataiter.__next__()
-Images, lables = data
-print(Images)
-print(Images.size())
-print()
-print(model(Images))
 
 Image, Label = Galaxy_dataset.__getitem__(35)
 
