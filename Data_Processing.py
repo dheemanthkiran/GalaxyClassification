@@ -10,7 +10,8 @@ from torchvision import transforms
 class CustomImageDataset(Dataset):
     """Custom Dataset class with Galaxy images"""
 
-    def __init__(self,mapping_file, img_dir, img_infoFile, transform=transforms.ToTensor(), target_transform=None,  device="cuda:0"):
+    def __init__(self, mapping_file, img_dir, img_infoFile, transform=transforms.ToTensor(), target_transform=None,
+                 device="cuda:0"):
         """Instanciante dataset subclass
 
             Parameters:
@@ -42,7 +43,7 @@ class CustomImageDataset(Dataset):
         """
         """Locating Image path"""
         i = 0
-        list = [1,2,3]
+        list = [1, 2, 3]
         while True:
             try:
                 """Tries to fetch Image with requested id"""
@@ -80,8 +81,6 @@ class CustomImageDataset(Dataset):
         image.to(torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
         return image, label
         """The except is there incase the id requested does not have an accosiated image, as some images are missing"""
-
-
 
 
 """#Creating Galaxy Dataset

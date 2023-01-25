@@ -54,7 +54,7 @@ class LeNet(torch.nn.Module):
         return num_features
 
 
-"""model = LeNet()
+""" model = LeNet()
 
 Galaxy_dataset = Data_Processing.CustomImageDataset(
     mapping_file="./gz2_filename_mapping.csv",

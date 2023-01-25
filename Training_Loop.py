@@ -28,7 +28,7 @@ optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.3, dampenin
 print("Done loading trainer")
 for inputs, labels in validationLoader:
     inputs, labels = inputs.to(device), labels.to(device)
-print("Done loading validation")"""
+print("Done loading validation") """
 
 
 def train_one_epoch(epoch_index):
