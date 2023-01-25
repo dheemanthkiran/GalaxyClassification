@@ -5,6 +5,8 @@ from torch.utils.data import DataLoader
 import torch.nn as nn
 import torch.optim
 
+torch.backends.cudnn.benchmark = True
+
 Galaxy_dataset = Data_Processing.CustomImageDataset(
     mapping_file="./gz2_filename_mapping.csv",
     img_dir="./images_gz2/images",
@@ -14,8 +16,8 @@ Training_Data, Validation_Data, Test_Data = torch.utils.data.random_split(datase
                                                                           lengths=[0.6, 0.2, 0.2],
                                                                           generator=torch.Generator().manual_seed(12))
 
-trainingLoader = DataLoader(Training_Data, shuffle=True, batch_size=128, pin_memory=True, num_workers= 4)
-validationLoader = DataLoader(Validation_Data, shuffle=False, batch_size=128, pin_memory=True, num_workers= 4)
+trainingLoader = DataLoader(Training_Data, shuffle=True, batch_size=128, pin_memory=True, num_workers= 2)
+validationLoader = DataLoader(Validation_Data, shuffle=False, batch_size=128, pin_memory=True, num_workers= 2)
 
 model = Network.LeNet()
 model.to(torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu"))
