@@ -4,7 +4,6 @@ import torch.utils.data
 from torch.utils.data import DataLoader
 import torch.nn as nn
 import torch.optim
-from datetime import datetime
 
 Galaxy_dataset = Data_Processing.CustomImageDataset(
     mapping_file="./gz2_filename_mapping.csv",
@@ -15,8 +14,8 @@ Training_Data, Validation_Data, Test_Data = torch.utils.data.random_split(datase
                                                                           lengths=[0.6, 0.2, 0.2],
                                                                           generator=torch.Generator().manual_seed(12))
 
-trainingLoader = DataLoader(Training_Data, shuffle=True, batch_size=128, pin_memory=True)
-validationLoader = DataLoader(Validation_Data, shuffle=False, batch_size=16, pin_memory=True)
+trainingLoader = DataLoader(Training_Data, shuffle=True, batch_size=128, pin_memory=True, num_workers= 4)
+validationLoader = DataLoader(Validation_Data, shuffle=False, batch_size=128, pin_memory=True, num_workers= 4)
 
 model = Network.LeNet()
 model.to(torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu"))
@@ -87,9 +86,10 @@ for epoch in range(epochsNum):
 
     running_vloss = 0.0
     for i, vdata in enumerate(validationLoader):
-        vinputs, vlabels = vdata
+        vinputs, vlabels = vdata[0].to(torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')), vdata[1].to(torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
         voutputs = model(vinputs)
         vloss = loss_fn(voutputs, vlabels)
+        print(vloss)
         running_vloss += vloss
 
     avg_vloss = running_vloss / (i + 1)

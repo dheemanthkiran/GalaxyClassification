@@ -77,7 +77,7 @@ class CustomImageDataset(Dataset):
         if self.target_transform:
             label = self.target_transform(label)
         image = image[:, 84:339, 84:339]
-        #image.to(torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
+        image.to(torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
         return image, label
         """The except is there incase the id requested does not have an accosiated image, as some images are missing"""
 
