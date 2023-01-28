@@ -3,8 +3,9 @@ import numpy as np
 import pandas as pd
 import torch
 from PIL import Image
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
+import time
 
 
 class CustomImageDataset(Dataset):
@@ -21,6 +22,7 @@ class CustomImageDataset(Dataset):
             Returns:
                 None
         """
+        print("Initializing")
         self.img_labels = pd.read_csv(mapping_file)
         self.img_dir = img_dir
         self.img_info = pd.read_csv(img_infoFile)
@@ -32,6 +34,7 @@ class CustomImageDataset(Dataset):
         return len(self.img_labels)
 
     def __getitem__(self, idx):
+        start = time.time()
         """
         returns Image and Image label of the indexed item in a combined tensor
 
@@ -78,28 +81,28 @@ class CustomImageDataset(Dataset):
         if self.target_transform:
             label = self.target_transform(label)
         image = image[:, 84:339, 84:339]
-        image.to(torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
+        # image.to(torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
         return image, label
         """The except is there incase the id requested does not have an accosiated image, as some images are missing"""
 
 
-"""#Creating Galaxy Dataset
-Galaxy_dataset = CustomImageDataset(
-    mapping_file="./gz2_filename_mapping.csv",
-    img_dir="./images_gz2/images",
-    img_infoFile="./gz2_hart16.csv")
+# Creating Galaxy Dataset
+"""def train():
+    # image, data = Galaxy_dataset.__getitem__(35)
+    # print(image)
 
-image, data = Galaxy_dataset.__getitem__(35)
+    # Creating new instance of dataloader class
+
+    # Creating iterator for dataloader
+    Galaxy_dataset = CustomImageDataset(
+        mapping_file="./gz2_filename_mapping.csv",
+        img_dir="./images_gz2/images",
+        img_infoFile="./gz2_hart16.csv")
+    dataloader = DataLoader(dataset=Galaxy_dataset, batch_size=128, shuffle=True, num_workers=2)
+    for j in range(3):
+        dataiter = iter(dataloader)
+        data = dataiter.__next__()
 
 
-print(image.size())
-
-
-# Creating new instance of dataloader class
-
-dataloader = DataLoader(dataset=Galaxy_dataset, batch_size=10, shuffle=True)
-# Creating iterator for dataloader
-dataiter = iter(dataloader)
-data = dataiter.__next__()
-features, labels = data
-print(features, labels)"""
+if __name__ == '__main__':
+    train()"""

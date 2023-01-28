@@ -20,9 +20,9 @@ class LeNet(torch.nn.Module):
         self.conv1 = torch.nn.Conv2d(3, 6, 5)
         self.conv2 = torch.nn.Conv2d(6, 16, 3)
         # 3 Linear layers for final output
-        self.fc1 = torch.nn.Linear(16 * 15 * 15, 100)
-        self.fc2 = torch.nn.Linear(100, 3)
-        # self.fc3 = torch.nn.Linear(52, 3)
+        self.fc1 = torch.nn.Linear(16 * 15 * 15, 120)
+        self.fc2 = torch.nn.Linear(120, 60)
+        self.fc3 = torch.nn.Linear(60, 3)
 
     def forward(self, x):
         """
@@ -42,8 +42,10 @@ class LeNet(torch.nn.Module):
         else:
             x = torch.flatten(x, 0)
         x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        # x = self.fc3(x)
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        # x = self.fc2(x)
+
         return x
 
     def num_flat_features(self, x):
