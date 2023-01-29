@@ -4,6 +4,7 @@ import torch.utils.data
 from torch.utils.data import DataLoader
 import torch.nn as nn
 import torch.optim
+import gc
 
 Galaxy_dataset = Data_Processing.CustomImageDataset(
     mapping_file="./gz2_filename_mapping.csv",
@@ -19,46 +20,43 @@ else:
 model = Network.LeNet()
 model.to(device=dev)
 loss_fn = nn.CrossEntropyLoss()
-# loss_fn.to(device=dev)
-optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.3, dampening=0.1)
-
-"""for inputs, labels in trainingLoader:
-    inputs, labels = inputs.to(device), labels.to(device)
-
-print("Done loading trainer")
-for inputs, labels in validationLoader:
-    inputs, labels = inputs.to(device), labels.to(device)
-print("Done loading validation") """
-
+loss_fn.to(device=dev)
+checkpoint = torch.load("my_model_Adam.pth.tar")
+model.load_state_dict(checkpoint['state_dict'])
+optimizer = torch.optim.Adam(model.parameters())
+optimizer.load_state_dict(checkpoint['optimizer'])
 
 def train():
-    epochsNum = 1
-    best_vloss = 1_000_000
+    epochsNum = 2
+    best_vloss = 1000000
+
     Training_Data, Validation_Data, Test_Data = torch.utils.data.random_split(dataset=Galaxy_dataset,
                                                                               lengths=[0.6, 0.2, 0.2],
                                                                               generator=torch.Generator().manual_seed(
                                                                                   12))
-
-    validationLoader = DataLoader(Validation_Data, shuffle=False, batch_size=128, pin_memory=True)
+    validationLoader = DataLoader(Validation_Data, shuffle=False, batch_size=128, pin_memory=True, num_workers=2)
     trainingLoader = DataLoader(Training_Data, shuffle=True, batch_size=128, pin_memory=True, num_workers=2)
+
     for epoch in range(epochsNum):
         print('EPOCH {}:'.format(epoch + 1))
 
         # Make sure gradient tracking is on, and do a pass over the data
         model.train(True)
+        torch.set_grad_enabled(True)
         last_loss = 0.
         running_loss = 0
+
         for i, data in enumerate(trainingLoader):
             print("batch ", i)
             # Every data instance is an input + label pair
-            inputs, labels = data[0].to(device=dev, non_blocking=True), data[1].to(device=dev, non_blocking=True)
+            inputs, labels = data
+            inputs = inputs.to(device=dev)
 
             # Zero your gradients for every batch!
             optimizer.zero_grad()
 
             # Make predictions for this batch
-            outputs = model(inputs)
-
+            outputs = model(inputs).to(device=torch.device("cpu"))
             # Compute the loss and its gradients
             loss = loss_fn(outputs, labels)
             loss.backward()
@@ -76,26 +74,22 @@ def train():
 
         # We don't need gradients on to do reporting
         model.train(False)
-
+        gc.collect()
+        torch.cuda.empty_cache()
+        torch.set_grad_enabled(False)
         running_vloss = 0.0
         for i, vdata in enumerate(validationLoader):
-            vinputs, vlabels = vdata[0].to(torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')), vdata[1].to(
-                torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
+            vinputs, vlabels = vdata[0].to(device=dev), vdata[1].to(device=dev)
             voutputs = model(vinputs)
             vloss = loss_fn(voutputs, vlabels)
-            print(vloss)
+            print("batch: ", i, "  Loss: vloss")
+            if i % 10 == 0:
+                gc.collect()
+                torch.cuda.empty_cache()
             running_vloss += vloss
 
         avg_vloss = running_vloss / (i + 1)
-        print('LOSS train {} valid {}'.format(avg_loss, avg_vloss))
-        """
-        # Log the running loss averaged per batch
-        # for both training and validation
-        writer.add_scalars('Training vs. Validation Loss',
-                           {'Training': avg_loss, 'Validation': avg_vloss},
-                           epochsNum + 1)
-        writer.flush()"""
-
+        print('LOSS train {} valid {}'.format(last_loss, avg_vloss))
         # Track best performance, and save the model's state
 
         if avg_vloss < best_vloss:
@@ -103,7 +97,7 @@ def train():
             model_path = 'model_{}'.format(epochsNum)
             checkpoint = {'state_dict': model.state_dict(), 'optimizer': optimizer.state_dict()}
             print("=> Saving model")
-            torch.save(checkpoint, "my_model.pth.tar")
+            torch.save(checkpoint, "my_model_Adam.pth.tar")
 
         epochsNum += 1
 

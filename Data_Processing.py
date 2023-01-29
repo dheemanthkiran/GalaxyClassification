@@ -1,3 +1,4 @@
+import gc
 import os
 import numpy as np
 import pandas as pd
@@ -6,6 +7,7 @@ from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 import time
+import gc
 
 
 class CustomImageDataset(Dataset):
@@ -102,6 +104,8 @@ class CustomImageDataset(Dataset):
     for j in range(3):
         dataiter = iter(dataloader)
         data = dataiter.__next__()
+        torch.cuda.empty_cache()
+        gc.collect()
 
 
 if __name__ == '__main__':
