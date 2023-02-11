@@ -87,26 +87,3 @@ class CustomImageDataset(Dataset):
         return image, label
         """The except is there incase the id requested does not have an accosiated image, as some images are missing"""
 
-
-# Creating Galaxy Dataset
-"""def train():
-    # image, data = Galaxy_dataset.__getitem__(35)
-    # print(image)
-
-    # Creating new instance of dataloader class
-
-    # Creating iterator for dataloader
-    Galaxy_dataset = CustomImageDataset(
-        mapping_file="./gz2_filename_mapping.csv",
-        img_dir="./images_gz2/images",
-        img_infoFile="./gz2_hart16.csv")
-    dataloader = DataLoader(dataset=Galaxy_dataset, batch_size=128, shuffle=True, num_workers=2)
-    for j in range(3):
-        dataiter = iter(dataloader)
-        data = dataiter.__next__()
-        torch.cuda.empty_cache()
-        gc.collect()
-
-
-if __name__ == '__main__':
-    train()"""

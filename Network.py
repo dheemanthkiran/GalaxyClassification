@@ -19,10 +19,12 @@ class LeNet(torch.nn.Module):
         # 2 convolusional layers to categorize features of Image
         self.conv1 = torch.nn.Conv2d(3, 6, 5)
         self.conv2 = torch.nn.Conv2d(6, 16, 3)
+        '''Two convolusion layers'''
         # 3 Linear layers for final output
         self.fc1 = torch.nn.Linear(16 * 15 * 15, 120)
         self.fc2 = torch.nn.Linear(120, 60)
         self.fc3 = torch.nn.Linear(60, 3)
+        '''Three fully connected layers'''
 
     def forward(self, x):
         """
@@ -32,6 +34,7 @@ class LeNet(torch.nn.Module):
         """
         batch = False
         if len(x.size()) == 4:
+            '''Checks if the input os a single image of batch of images'''
             batch = True
         # Max pooling over a (4,4) window to decrease parameters
         x = F.max_pool2d(F.relu(self.conv1(x)), 4)
@@ -44,8 +47,6 @@ class LeNet(torch.nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
-        # x = self.fc2(x)
-
         return x
 
     def num_flat_features(self, x):
@@ -56,15 +57,4 @@ class LeNet(torch.nn.Module):
         return num_features
 
 
-""" model = LeNet()
 
-Galaxy_dataset = Data_Processing.CustomImageDataset(
-    mapping_file="./gz2_filename_mapping.csv",
-    img_dir="./images_gz2/images",
-    img_infoFile="./gz2_hart16.csv")
-
-Image, Label = Galaxy_dataset.__getitem__(35)
-
-a = model(Image)
-
-print(a)"""
