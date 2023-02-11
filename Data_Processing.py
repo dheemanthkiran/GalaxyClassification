@@ -1,3 +1,4 @@
+import gc
 import os
 import numpy as np
 import pandas as pd
@@ -5,13 +6,16 @@ import torch
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
+import time
+import gc
 
 
 class CustomImageDataset(Dataset):
     """Custom Dataset class with Galaxy images"""
 
-    def __init__(self, mapping_file, img_dir, img_infoFile, transform=transforms.ToTensor(), target_transform=None):
-        """Instanciante dataset sublass
+    def __init__(self, mapping_file, img_dir, img_infoFile, transform=transforms.ToTensor(), target_transform=None,
+                 device="cuda:0"):
+        """Instanciante dataset subclass
 
             Parameters:
                 mapping file (string) directory of mapping file
@@ -20,6 +24,7 @@ class CustomImageDataset(Dataset):
             Returns:
                 None
         """
+        print("Initializing")
         self.img_labels = pd.read_csv(mapping_file)
         self.img_dir = img_dir
         self.img_info = pd.read_csv(img_infoFile)
@@ -31,6 +36,7 @@ class CustomImageDataset(Dataset):
         return len(self.img_labels)
 
     def __getitem__(self, idx):
+        start = time.time()
         """
         returns Image and Image label of the indexed item in a combined tensor
 
@@ -42,7 +48,7 @@ class CustomImageDataset(Dataset):
         """
         """Locating Image path"""
         i = 0
-        list = [1,2,3]
+        list = [1, 2, 3]
         while True:
             try:
                 """Tries to fetch Image with requested id"""
@@ -56,11 +62,17 @@ class CustomImageDataset(Dataset):
                 break
             except FileNotFoundError:
                 """Some Images are missing. If the file is not found, it will just return the next available image"""
-                i = i + 1
+                if i == self.__len__():
+                    i = 0
+                else:
+                    i = i + 1
                 pass
             except IndexError:
                 """A small number of images have unindexed information. This handles that error"""
-                i = i + 1
+                if i == self.__len__():
+                    i = 0
+                else:
+                    i = i + 1
                 pass
 
         """creating new label with the highest voted category"""
@@ -70,22 +82,8 @@ class CustomImageDataset(Dataset):
             image = self.transform(image)
         if self.target_transform:
             label = self.target_transform(label)
+        image = image[:, 84:339, 84:339]
+        # image.to(torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
         return image, label
         """The except is there incase the id requested does not have an accosiated image, as some images are missing"""
 
-
-""""Creating Galaxy Dataset
-Galaxy_dataset = CustomImageDataset(
-    mapping_file="./gz2_filename_mapping.csv",
-    img_dir="./images_gz2/images",
-    img_infoFile="./gz2_hart16.csv")
-
-
-# Creating new instance of dataloader class
-
-dataloader = DataLoader(dataset=Galaxy_dataset, batch_size=10, shuffle=True)
-# Creating iterator for dataloader
-dataiter = iter(dataloader)
-data = dataiter.__next__()
-features, labels = data
-print(features, labels)"""
